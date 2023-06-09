@@ -44,7 +44,7 @@ class AuthService {
   async confirmAccount(token: string) {
 
     try {
-      const user: UserWithIdProps | null = await User.findOne({ token: token })
+      const user: UserWithIdProps | null = await User.findOne({ token })
 
       if (!user) {
         throw new BadCredentialsException(true, "Invalid token.")

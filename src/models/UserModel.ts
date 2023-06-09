@@ -33,8 +33,6 @@ const userSchema = new Schema<UserProps>({
   },
   token: {
     type: String,
-    required: true,
-    trim: true
   },
   confirmed: {
     type: Boolean,
