@@ -1,10 +1,11 @@
-import { AccountConfirmedException } from "../exceptions/AccountConfirmedException";
-import { BadCredentialsException } from "../exceptions/BadCredentialsException";
-import { InternalErrorException } from "../exceptions/InternalErrorException";
-import { UserExistException } from "../exceptions/UserExistException";
+import { AccountConfirmedException } from "../exceptions/authExceptions/AccountConfirmedException";
+import { AccountUnconfirmedException } from "../exceptions/authExceptions/AccountUnconfirmedException";
+import { BadCredentialsException } from "../exceptions/authExceptions/BadCredentialsException";
+import { InternalErrorException } from "../exceptions/authExceptions/InternalErrorException";
+import { UserExistException } from "../exceptions/authExceptions/UserExistException";
 import helper from "../helpers/helper";
-import User from "../models/UserModel";
-import { NewUserProps, UserWithIdProps } from "../types/types";
+import UserModel from "../models/UserModel";
+import { LoginProps, NewUserProps, UserWithIdProps } from "../types/types";
 
 class AuthService {
   constructor() { }
@@ -17,7 +18,7 @@ class AuthService {
 
 
     // Verify existing user
-    const userExist = await User.findOne({ email: email })
+    const userExist = await UserModel.findOne({ email: email })
 
 
     if (userExist) {
@@ -28,7 +29,7 @@ class AuthService {
     // Create user
     try {
 
-      const newUser = new User(data)
+      const newUser = new UserModel(data)
       newUser.token = helper.generateToken()
       await newUser.save()
 
@@ -44,14 +45,16 @@ class AuthService {
   async confirmAccount(token: string) {
 
     try {
-      const user: UserWithIdProps | null = await User.findOne({ token })
+      const user: UserWithIdProps | null = await UserModel.findOne({ token })
 
       if (!user) {
         throw new BadCredentialsException(true, "Invalid token.")
+        return
       }
 
       if (user.confirmed) {
         throw new AccountConfirmedException(true, "Account Already Confirmed")
+        return
       }
 
       user.confirmed = true
@@ -62,10 +65,38 @@ class AuthService {
 
     } catch (error) {
       console.log("CONFIRM_ACCOUNT_ERROR", error);
-      throw new InternalErrorException(true, "INTERNAL_ERROR")
+      return error
     }
   }
 
+  // ---------------------- Login ------------------------
+  async login(data: LoginProps) {
+
+    const { email, password } = data
+
+    try {
+      const user: UserWithIdProps | null = await UserModel.findOne({ email: email })
+
+      if (!user) {
+        throw new BadCredentialsException(true, "Invalid credentials.")
+      }
+
+      if (!user.confirmed) {
+        throw new AccountUnconfirmedException(true, "Account Unconfirmed.")
+      }
+
+      if (!await helper.validatePassword(password, user.password)) {
+        throw new BadCredentialsException(true, "Invalid password.")
+      }
+
+      user.token = helper.generateJWT(user._id)
+      return { error: false, user }
+
+    } catch (error) {
+      console.log("LOGIN_ERROR", error);
+      return error
+    }
+  }
 }
 
 export default new AuthService()

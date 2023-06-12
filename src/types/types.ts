@@ -12,10 +12,12 @@ export interface UserProps extends Document {
 }
 
 export interface UserWithIdProps extends UserProps {
-  id: string
+  _id: string
 }
 
 export type NewUserProps = Omit<UserProps, "token" | "confirmed" | "avatar">
+
+export type LoginProps = Pick<UserProps, "email" | "password">
 
 
 export interface GroupProps extends Document {

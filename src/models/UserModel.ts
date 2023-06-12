@@ -1,5 +1,6 @@
 import { UserProps } from './../types/types';
 import mongoose, { Schema } from "mongoose";
+const bcrypt = require('bcrypt');
 
 const userSchema = new Schema<UserProps>({
   username: {
@@ -46,6 +47,19 @@ const userSchema = new Schema<UserProps>({
   }
 })
 
-const User = mongoose.model<UserProps>("User", userSchema)
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    next();
+  }
 
-export default User;
+  const salt = await bcrypt.genSalt(10)
+  this.password = await bcrypt.hash(this.password, salt)
+})
+
+userSchema.methods.comparePassword = async function (passwordForm: string) {
+  return await bcrypt.comparePassword(passwordForm, this.password)
+}
+
+const UserModel = mongoose.model<UserProps>("User", userSchema)
+
+export default UserModel;
