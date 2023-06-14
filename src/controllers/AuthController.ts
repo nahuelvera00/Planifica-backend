@@ -1,7 +1,7 @@
 
 import { Request, Response } from "express";
 import AuthServices from "../services/AuthServices";
-import { ExceptionResponse, LoginProps, NewUserProps, RecoverPasswordProps } from "../types/types"; import exceptionManager from "../utils/ExceptionManager";
+import { LoginProps, NewUserProps, RecoverPasswordProps } from "../types/types"; import exceptionManager from "../utils/ExceptionManager";
 
 class AuthController {
     constructor() { }
@@ -16,13 +16,11 @@ class AuthController {
             // Call AuthService
             const newUser = await AuthServices.createUser(data)
 
-            return res.status(201).json(newUser.msg)
+            return res.status(201).json(newUser)
 
         } catch (error: Error | any) {
-            console.log(error);
 
-            const errorManager: ExceptionResponse = exceptionManager(error)
-            return res.status(errorManager.status).json({ msg: errorManager.msg, error: errorManager.isError })
+            return exceptionManager(res, error)
 
         }
     }
@@ -38,30 +36,22 @@ class AuthController {
             return res.status(200).json(result)
 
         } catch (error: Error | any) {
-            console.log(error);
 
-            const errorManager: ExceptionResponse = exceptionManager(error)
-            return res.status(errorManager.status).json({ msg: errorManager.msg, error: errorManager.isError })
+            return exceptionManager(res, error)
 
         }
     }
 
     // -------------------- LOGIN -----------------------
     async login(req: Request, res: Response) {
-
         const data: LoginProps = req.body
 
         try {
-
             const result = await AuthServices.login(data)
-
             return res.status(200).json(result)
 
         } catch (error: Error | any) {
-            console.log(error);
-
-            const errorManager: ExceptionResponse = exceptionManager(error)
-            return res.status(errorManager.status).json({ msg: errorManager.msg, error: errorManager.isError })
+            return exceptionManager(res, error)
         }
     }
 
@@ -75,13 +65,37 @@ class AuthController {
 
             return res.status(200).json(result)
         } catch (error: Error | any) {
-            console.log(error);
 
-            const errorManager: ExceptionResponse = exceptionManager(error)
-            return res.status(errorManager.status).json({ msg: errorManager.msg, error: errorManager.isError })
+            return exceptionManager(res, error)
+
         }
     }
 
+    // --------- CHECK TOKEN FOR RECOVER PASSWORD ----------------
+    async check(req: Request, res: Response) {
+
+        try {
+            const { token } = req.params
+            const result = await AuthServices.check(token)
+
+            return res.status(200).json(result)
+        } catch (error: Error | any) {
+            return exceptionManager(res, error)
+        }
+    }
+
+    async updatePassword(req: Request, res: Response) {
+
+        try {
+            const { token } = req.params
+            const { password } = req.body
+
+            const result = await AuthServices.updatePassword(token, password)
+            return res.status(200).json(result)
+        } catch (error: Error | any) {
+            return exceptionManager(res, error)
+        }
+    }
 
 
 }

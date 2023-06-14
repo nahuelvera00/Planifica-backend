@@ -1,13 +1,13 @@
 
 export class InternalErrorException extends Error {
-  error: boolean
-  msg: string
+    isError: boolean
+    msg: string
 
-  constructor(error: boolean, msg: string) {
-    super(msg)
-    this.name = "InternalErrorException"
-    this.error = error
-    this.msg = msg
-  }
+    constructor(isError: boolean, msg: string) {
+        super(msg)
+        this.name = "InternalErrorException"
+        this.isError = isError
+        this.msg = msg
+    }
 
 }

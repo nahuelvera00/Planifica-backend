@@ -1,7 +1,6 @@
 import { AccountConfirmedException } from "../exceptions/authExceptions/AccountConfirmedException";
 import { AccountUnconfirmedException } from "../exceptions/authExceptions/AccountUnconfirmedException";
 import { BadCredentialsException } from "../exceptions/authExceptions/BadCredentialsException";
-import { InternalErrorException } from "../exceptions/authExceptions/InternalErrorException";
 import { UserExistException } from "../exceptions/authExceptions/UserExistException";
 import helper from "../helpers/helper";
 import UserModel from "../models/UserModel";
@@ -16,20 +15,17 @@ class AuthService {
 
         const { email } = data
 
-
         // Verify existing user
         const userExist = await UserModel.findOne({ email: email })
 
-
+        // If the user exists runs the following exception
         if (userExist) {
-            // If the user exists runs the following exception
             throw new UserExistException(true, "User already exists.")
         }
 
-        // Create user
         try {
-
-            const newUser = new UserModel(data)
+            // Create user
+            const newUser: UserProps | null = new UserModel(data)
             newUser.token = helper.generateToken()
             await newUser.save()
 
@@ -37,32 +33,31 @@ class AuthService {
 
         } catch (error) {
             console.log("CREATE_USER_ERROR", error);
-            throw new InternalErrorException(true, "INTERNAL_ERROR")
+            return error
         }
     }
 
     // ---------------------- Confirm account ------------------------
     async confirmAccount(token: string) {
 
+        const user: UserProps | null = await UserModel.findOne({ token })
+
+        if (!user) {
+            throw new BadCredentialsException(true, "Invalid token.")
+            return
+        }
+
+        if (user.confirmed) {
+            throw new AccountConfirmedException(true, "Account Already Confirmed")
+            return
+        }
+
         try {
-            const user: UserProps | null = await UserModel.findOne({ token })
-
-            if (!user) {
-                throw new BadCredentialsException(true, "Invalid token.")
-                return
-            }
-
-            if (user.confirmed) {
-                throw new AccountConfirmedException(true, "Account Already Confirmed")
-                return
-            }
-
             user.confirmed = true
             user.token = ""
             await user.save()
 
             return { error: false, msg: "User confirmed successfully." }
-
         } catch (error) {
             console.log("CONFIRM_ACCOUNT_ERROR", error);
             return error
@@ -74,20 +69,21 @@ class AuthService {
 
         const { email, password } = data
 
+        const user: UserProps | null = await UserModel.findOne({ email: email })
+
+        if (!user) {
+            throw new BadCredentialsException(true, "Invalid credentials.")
+        }
+
+        if (!user.confirmed) {
+            throw new AccountUnconfirmedException(true, "Account Unconfirmed.")
+        }
+
+        if (!await helper.validatePassword(password, user.password)) {
+            throw new BadCredentialsException(true, "Invalid password.")
+        }
+
         try {
-            const user: UserProps | null = await UserModel.findOne({ email: email })
-
-            if (!user) {
-                throw new BadCredentialsException(true, "Invalid credentials.")
-            }
-
-            if (!user.confirmed) {
-                throw new AccountUnconfirmedException(true, "Account Unconfirmed.")
-            }
-
-            if (!await helper.validatePassword(password, user.password)) {
-                throw new BadCredentialsException(true, "Invalid password.")
-            }
 
             user.token = helper.generateJWT(user._id)
 
@@ -102,24 +98,66 @@ class AuthService {
     // ---------------------- Recover Password ------------------------
     async recoverPassword(data: RecoverPasswordProps) {
 
+        // Get user
         const user = await UserModel.findOne({ email: data.email })
 
+        // If don´t exist user
         if (!user) {
             throw new BadCredentialsException(true, "Invalid credentials.")
         }
 
         try {
+            // generate new token
             user.token = helper.generateToken()
-            user.save()
+            await user.save()
 
             // SEND EMAIL
 
+            // Retun message
             return { error: false, msg: "We send you an email so you can recover your password" }
         } catch (error) {
             console.log("RECOVER_PASSWORD_ERROR", error);
             return error
         }
     }
+
+    // ---------------------- Check token ------------------------
+    async check(token: string) {
+
+        const validToken = await UserModel.findOne({ token: token })
+
+        if (!validToken) {
+            throw new BadCredentialsException(false, "Invalid Token.")
+        }
+
+        try {
+            return { error: false, msg: "Valid token." }
+        } catch (error) {
+            console.log("CHECK_TOKEN_ERROR", error);
+            return error
+        }
+    }
+
+    async updatePassword(token: string, password: string) {
+
+        const user: UserProps | null = await UserModel.findOne({ token })
+
+        if (!user) {
+            throw new UserExistException(true, "Invalid token.")
+        }
+
+        try {
+            user.token = ""
+            user.password = password
+
+            await user.save()
+
+            return { error: false, msg: "Your password was successfully reset" };
+        } catch (error) {
+            return error
+        }
+    }
+
 
 }
 

@@ -1,11 +1,11 @@
 export class AccountUnconfirmedException extends Error {
-    error: boolean
+    isError: boolean
     msg: string
 
-    constructor(error: boolean, msg: string) {
+    constructor(isError: boolean, msg: string) {
         super(msg)
         this.name = "AccountUnconfirmedException"
-        this.error = error
+        this.isError = isError
         this.msg = msg
     }
 
