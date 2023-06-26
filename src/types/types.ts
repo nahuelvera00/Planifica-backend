@@ -1,5 +1,7 @@
+import { Request } from "express"
 import { Document } from "mongoose"
 
+// ---------------------- USER TYPES ------------------------------------------
 export interface UserProps extends Document {
     username: string
     name: string
@@ -32,19 +34,26 @@ export type LoginProps = Pick<UserProps, "email" | "password">
 
 export type RecoverPasswordProps = Pick<UserProps, "email">
 
+
+
+// ----------------------------- GROUP TYPES -----------------------------
+
 export interface GroupProps extends Document {
     name: string,
+    user: UserProps["_id"],
     schedules: ScheduleProps[]
 }
 
-export interface ScheduleProps extends Document {
-    days: Day,
+export type NewGroupProps = Omit<GroupProps, "user">
+
+export interface ScheduleProps {
+    day: Day,
     startTime: string,
     endTime: string
 }
 
 
-enum Day {
+export enum Day {
     Monday = "Monday",
     Tuesday = "Tuesday",
     Wednesday = "Wednesday",
@@ -52,4 +61,9 @@ enum Day {
     Friday = "Friday",
     Saturday = "Saturday",
     Sunday = "Sunday"
+}
+
+// ------------------------ CUSTOM REQUEST----------------------------------------
+export interface CustomReq extends Request {
+    user: UserProps | null
 }

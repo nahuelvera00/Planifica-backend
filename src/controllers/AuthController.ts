@@ -18,7 +18,7 @@ class AuthController {
 
             return res.status(201).json(newUser)
 
-        } catch (error: Error | any) {
+        } catch (error: Error | unknown) {
 
             return exceptionManager(res, error)
 
@@ -35,7 +35,7 @@ class AuthController {
 
             return res.status(200).json(result)
 
-        } catch (error: Error | any) {
+        } catch (error: Error | unknown) {
 
             return exceptionManager(res, error)
 
@@ -50,7 +50,7 @@ class AuthController {
             const result = await AuthServices.login(data)
             return res.status(200).json(result)
 
-        } catch (error: Error | any) {
+        } catch (error: Error | unknown) {
             return exceptionManager(res, error)
         }
     }
@@ -64,7 +64,7 @@ class AuthController {
             const result = await AuthServices.recoverPassword(data)
 
             return res.status(200).json(result)
-        } catch (error: Error | any) {
+        } catch (error: Error | unknown) {
 
             return exceptionManager(res, error)
 
@@ -79,7 +79,7 @@ class AuthController {
             const result = await AuthServices.check(token)
 
             return res.status(200).json(result)
-        } catch (error: Error | any) {
+        } catch (error: Error | unknown) {
             return exceptionManager(res, error)
         }
     }
@@ -92,12 +92,10 @@ class AuthController {
 
             const result = await AuthServices.updatePassword(token, password)
             return res.status(200).json(result)
-        } catch (error: Error | any) {
+        } catch (error: Error | unknown) {
             return exceptionManager(res, error)
         }
     }
-
-
 }
 
 export default new AuthController();

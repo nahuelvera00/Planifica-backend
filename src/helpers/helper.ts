@@ -1,4 +1,4 @@
-import { UserProps } from "../types/types";
+import { NonSensitiveUserProps, UserProps } from "../types/types";
 
 const jwt = require("jsonwebtoken")
 const bcrypt = require('bcrypt');
@@ -21,7 +21,7 @@ class Helper {
         return await bcrypt.compare(enteredPassword, password)
     }
 
-    transformNonSensitiveUser(user: UserProps) {
+    transformNonSensitiveUser(user: UserProps): NonSensitiveUserProps {
         const { _id, username, name, lastname, email, token, avatar } = user
         const NonSensitiveData = {
             _id,
@@ -32,7 +32,7 @@ class Helper {
             token,
             avatar
         }
-        return NonSensitiveData;
+        return NonSensitiveData
     }
 
 }

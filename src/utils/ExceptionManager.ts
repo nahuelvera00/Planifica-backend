@@ -4,15 +4,18 @@ import { AccountUnconfirmedException } from "../exceptions/authExceptions/Accoun
 import { BadCredentialsException } from "../exceptions/authExceptions/BadCredentialsException";
 import { InternalErrorException } from "../exceptions/authExceptions/InternalErrorException";
 import { UserExistException } from "../exceptions/authExceptions/UserExistException";
+import { InvalidNameException } from "../exceptions/groupExceptions/InvalidNameException";
+import { InvalidFormatDayException } from "../exceptions/groupExceptions/InvalidFormatDayException";
+import { InvalidTimeFormatException } from "../exceptions/groupExceptions/InvalidTimeFormatException";
 
-function exceptionManager(res: Response, error: Error): Response {
+function exceptionManager(res: Response, error: Error | any): Response {
     console.log(error);
     // This exception is executed when a user cannot be found in DB
     if (error instanceof UserExistException) {
         return res.status(409).json({ msg: error.msg, error: error.isError })
     }
 
-    // Internal eeror: DB, other...
+    // Internal error: DB, other...
     if (error instanceof InternalErrorException) {
         return res.status(500).json({ msg: error.msg, error: error.isError })
     }
@@ -33,6 +36,22 @@ function exceptionManager(res: Response, error: Error): Response {
     if (error instanceof AccountUnconfirmedException) {
         return res.status(400).json({ msg: error.msg, error: error.isError })
     }
+
+
+    // ------------------------------- GROUP EXCEPTIONS---------------------------------
+    if (error instanceof InvalidNameException) {
+        return res.status(400).json({ msg: error.msg, error: error.isError })
+    }
+
+    if (error instanceof InvalidFormatDayException) {
+        return res.status(400).json({ msg: error.msg, error: error.isError })
+    }
+
+    if (error instanceof InvalidTimeFormatException) {
+        return res.status(400).json({ msg: error.msg, error: error.isError })
+    }
+
+
 
     return res.status(500).json({ msg: "ERROR", error: true })
 
