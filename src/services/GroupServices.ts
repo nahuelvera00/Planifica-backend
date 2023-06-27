@@ -8,6 +8,18 @@ import { isDay, isString, isTime } from "../utils/ValidateType";
 class GroupService {
     constructor() { }
 
+    // ---------------------------- GET GROUP BY USERID ------------------------------------
+    async get(userId: string) {
+
+        try {
+            const schedules: GroupProps[] = await GroupModel.find({ user: userId }).select("-user -__v")
+            return { error: false, schedules }
+        } catch (error) {
+            console.log("GET_GROUP_ERROR", error);
+            return error
+        }
+    }
+
     // --------------------------- CREATE GROUP -------------------------------------
     async create(data: NewGroupProps, user: UserProps | null) {
 

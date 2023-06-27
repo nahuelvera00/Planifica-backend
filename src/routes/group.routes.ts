@@ -5,6 +5,8 @@ import { CustomReq } from "../types/types";
 
 const router = Router()
 
-router.post("/", checkAuth, (req, res) => GroupController.create(req as CustomReq, res))
+router.route("/")
+    .get(checkAuth, (req, res) => GroupController.getAllByUserId(req as CustomReq, res))
+    .post(checkAuth, (req, res) => GroupController.create(req as CustomReq, res))
 
 export default router
