@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { CustomReq, SensitiveGroupProps } from "../types/types";
+import { CustomReq, SensitiveGroupProps, UserProps } from "../types/types";
 import GroupServices from '../services/GroupServices';
 import exceptionManager from '../utils/ExceptionManager';
 
@@ -34,7 +34,7 @@ class GroupController {
 
     // ------------- Update group -------------------
     async update(req: CustomReq, res: Response) {
-        const user = req.user
+        const user: UserProps | null = req.user
         const data: SensitiveGroupProps = req.body
 
         try {
@@ -47,8 +47,16 @@ class GroupController {
     }
 
     // ------------- Delete group -------------------
-    async delete() {
+    async delete(req: CustomReq, res: Response) {
+        const user: UserProps | null = req.user
+        const { groupId } = req.params
 
+        try {
+            const result = await GroupServices.delete(groupId, user?._id)
+            return res.status(200).json(result)
+        } catch (error: Error | unknown) {
+            return exceptionManager(res, error)
+        }
     }
 
 }

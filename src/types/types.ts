@@ -52,7 +52,6 @@ export interface ScheduleProps {
     endTime: string
 }
 
-
 export enum Day {
     Monday = "Monday",
     Tuesday = "Tuesday",

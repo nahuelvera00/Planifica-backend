@@ -59,14 +59,14 @@ class GroupService {
     async update(data: SensitiveGroupProps, user: UserProps | null) {
         const { name, schedules } = data
 
-        // VALIDATE DATA
+        // VALIDATION
         // Validate existing group
         const groupExist: GroupProps | null = await GroupModel.findById(data._id)
         if (!groupExist) {
             throw new GroupNotFoundException(true, "Group not found.")
         }
 
-        // Validate use
+        // Validate user
         if (groupExist.user.toString() !== user?._id.toString()) {
             throw new InvalidActionGroupException(true, "Invalid Action, you do not have the necessary permissions for this action.")
         }
@@ -76,9 +76,33 @@ class GroupService {
             groupExist.schedules = schedules || groupExist.schedules
 
             await groupExist.save()
-            return { error: false, msg: "Group updated successfully" }
+            return { error: false, msg: "Group successfully updated" }
         } catch (error) {
-            console.log("UPDATED_GROUP_ERROR", error);
+            console.log("UPDATE_GROUP_ERROR", error);
+            return error
+        }
+    }
+
+    // -------------------------- DELETE GROUP --------------------------------------
+    async delete(groupId: string, userId: string) {
+
+        // VALIDATION
+        // Validate existing group
+        const groupExist: GroupProps | null = await GroupModel.findById(groupId)
+        if (!groupExist) {
+            throw new GroupNotFoundException(true, "Group not found.")
+        }
+
+        // Validate user
+        if (groupExist.user.toString() !== userId.toString()) {
+            throw new InvalidActionGroupException(true, "Invalid Action, you do not have the necessary permissions for this action.")
+        }
+
+        try {
+            await groupExist.deleteOne()
+            return { error: false, msg: "Group successfully deleted" }
+        } catch (error) {
+            console.log("DELETE_GROUP_ERROR", error);
             return error
         }
     }

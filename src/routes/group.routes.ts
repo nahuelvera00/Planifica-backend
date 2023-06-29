@@ -10,4 +10,6 @@ router.route("/")
     .post(checkAuth, (req, res) => GroupController.create(req as CustomReq, res))
     .put(checkAuth, (req, res) => GroupController.update(req as CustomReq, res))
 
+router.delete("/:groupId", checkAuth, (req, res) => GroupController.delete(req as CustomReq, res))
+
 export default router
