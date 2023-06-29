@@ -44,7 +44,7 @@ export interface GroupProps extends Document {
     schedules: ScheduleProps[]
 }
 
-export type NewGroupProps = Omit<GroupProps, "user">
+export type SensitiveGroupProps = Omit<GroupProps, "user">
 
 export interface ScheduleProps {
     day: Day,

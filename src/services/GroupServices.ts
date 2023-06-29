@@ -1,8 +1,10 @@
+import { GroupNotFoundException } from "../exceptions/groupExceptions/GroupNotFoundException";
+import { InvalidActionGroupException } from "../exceptions/groupExceptions/InvalidActionGroup";
 import { InvalidFormatDayException } from "../exceptions/groupExceptions/InvalidFormatDayException";
 import { InvalidNameException } from "../exceptions/groupExceptions/InvalidNameException";
 import { InvalidTimeFormatException } from "../exceptions/groupExceptions/InvalidTimeFormatException";
 import GroupModel from "../models/GroupModel";
-import { GroupProps, NewGroupProps, UserProps } from "../types/types";
+import { GroupProps, SensitiveGroupProps, UserProps } from "../types/types";
 import { isDay, isString, isTime } from "../utils/ValidateType";
 
 class GroupService {
@@ -21,7 +23,7 @@ class GroupService {
     }
 
     // --------------------------- CREATE GROUP -------------------------------------
-    async create(data: NewGroupProps, user: UserProps | null) {
+    async create(data: SensitiveGroupProps, user: UserProps | null) {
 
         const { name, schedules } = data
 
@@ -38,7 +40,7 @@ class GroupService {
                 throw new InvalidFormatDayException(true, "Invalid day format.")
             }
             if (!isTime(startTime) || !isTime(endTime)) {
-                throw new InvalidTimeFormatException(true, "Invalid Time.")
+                throw new InvalidTimeFormatException(true, "Invalid time.")
             }
         }
 
@@ -49,6 +51,34 @@ class GroupService {
             return { error: false, msg: "Create group successfully." }
         } catch (error) {
             console.log("CREATE_GROUP_ERROR", error);
+            return error
+        }
+    }
+
+    // -------------------------- UPDATE GROUP --------------------------------------
+    async update(data: SensitiveGroupProps, user: UserProps | null) {
+        const { name, schedules } = data
+
+        // VALIDATE DATA
+        // Validate existing group
+        const groupExist: GroupProps | null = await GroupModel.findById(data._id)
+        if (!groupExist) {
+            throw new GroupNotFoundException(true, "Group not found.")
+        }
+
+        // Validate use
+        if (groupExist.user.toString() !== user?._id.toString()) {
+            throw new InvalidActionGroupException(true, "Invalid Action, you do not have the necessary permissions for this action.")
+        }
+
+        try {
+            groupExist.name = name || groupExist.name
+            groupExist.schedules = schedules || groupExist.schedules
+
+            await groupExist.save()
+            return { error: false, msg: "Group updated successfully" }
+        } catch (error) {
+            console.log("UPDATED_GROUP_ERROR", error);
             return error
         }
     }

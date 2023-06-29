@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { CustomReq, NewGroupProps } from "../types/types";
+import { CustomReq, SensitiveGroupProps } from "../types/types";
 import GroupServices from '../services/GroupServices';
 import exceptionManager from '../utils/ExceptionManager';
 
@@ -21,7 +21,7 @@ class GroupController {
     // ------ Add new group --------------- 
     async create(req: CustomReq, res: Response) {
         const user = req.user
-        const data: NewGroupProps = req.body
+        const data: SensitiveGroupProps = req.body
 
         try {
             const result = await GroupServices.create(data, user)
@@ -33,8 +33,17 @@ class GroupController {
 
 
     // ------------- Update group -------------------
-    async update() {
+    async update(req: CustomReq, res: Response) {
+        const user = req.user
+        const data: SensitiveGroupProps = req.body
 
+        try {
+            const result = await GroupServices.update(data, user)
+            return res.status(200).json(result)
+
+        } catch (error: Error | unknown) {
+            return exceptionManager(res, error)
+        }
     }
 
     // ------------- Delete group -------------------

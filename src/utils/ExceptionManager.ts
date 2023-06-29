@@ -7,6 +7,8 @@ import { UserExistException } from "../exceptions/authExceptions/UserExistExcept
 import { InvalidNameException } from "../exceptions/groupExceptions/InvalidNameException";
 import { InvalidFormatDayException } from "../exceptions/groupExceptions/InvalidFormatDayException";
 import { InvalidTimeFormatException } from "../exceptions/groupExceptions/InvalidTimeFormatException";
+import { GroupNotFoundException } from "../exceptions/groupExceptions/GroupNotFoundException";
+import { InvalidActionGroupException } from "../exceptions/groupExceptions/InvalidActionGroup";
 
 function exceptionManager(res: Response, error: Error | any): Response {
     console.log(error);
@@ -48,6 +50,14 @@ function exceptionManager(res: Response, error: Error | any): Response {
     }
 
     if (error instanceof InvalidTimeFormatException) {
+        return res.status(400).json({ msg: error.msg, error: error.isError })
+    }
+
+    if (error instanceof GroupNotFoundException) {
+        return res.status(400).json({ msg: error.msg, error: error.isError })
+    }
+
+    if (error instanceof InvalidActionGroupException) {
         return res.status(400).json({ msg: error.msg, error: error.isError })
     }
 
